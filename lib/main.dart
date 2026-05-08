@@ -1,12 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'features/posts/presentation/pages/counter_page.dart';
+import 'features/posts/presentation/providers/theme_provider.dart';
 
 void main() {
-  runApp(
-    const ProviderScope(
-      child: MyApp(),
-    ),
-  );
+  runApp(const ProviderScope(child: MyApp()));
 }
 
 class MyApp extends ConsumerWidget {
@@ -14,12 +12,17 @@ class MyApp extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+
+    final themeMode = ref.watch(themeModeProvider);
+
     return MaterialApp(
       title: 'Clean Riverpod App',
-      theme: ThemeData.light(),
-      home: const Scaffold(
-        body: Center(child: Text("Project Started")),
-      ),
+      debugShowCheckedModeBanner: false,
+
+      themeMode: themeMode,
+      theme: ThemeData.light(useMaterial3: true),
+      darkTheme: ThemeData.dark(useMaterial3: true),
+      home: const CounterPage(),
     );
   }
 }
