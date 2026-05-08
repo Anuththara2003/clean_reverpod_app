@@ -10,10 +10,10 @@ class PostModel extends Post {
 
   factory PostModel.fromJson(Map<String, dynamic> json) {
     return PostModel(
-      id: json['id'],
-      userId: json['userId'],
-      title: json['title'],
-      body: json['body'],
+      id: json['id'] as int,
+      userId: json['userId'] as int,
+      title: json['title'] as String,
+      body: json['body'] as String,
     );
   }
 }

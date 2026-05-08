@@ -20,5 +20,5 @@ class MyApp extends ConsumerWidget {
       darkTheme: ThemeData(useMaterial3: true, brightness: Brightness.dark),
       home: const PostsListPage(),
     );
-  }
+    }
 }

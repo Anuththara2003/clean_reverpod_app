@@ -3,53 +3,51 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/posts_provider.dart';
 import 'post_detail_page.dart';
 
-class PostsListPage extends ConsumerStatefulWidget {
+class PostsListPage extends ConsumerWidget {
   const PostsListPage({super.key});
-  @override
-  ConsumerState<PostsListPage> createState() => _PostsListPageState();
-}
-
-class _PostsListPageState extends ConsumerState<PostsListPage> {
-  bool isSearchMode = false;
-  final TextEditingController _controller = TextEditingController();
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final postsAsync = ref.watch(postsProvider);
-    final searchAsync = ref.watch(searchProvider);
 
     return Scaffold(
+      backgroundColor: Colors.grey[100],
       appBar: AppBar(
-        title: !isSearchMode
-            ? const Text("Clean API Posts")
-            : TextField(
-          controller: _controller,
-          decoration: const InputDecoration(hintText: "Search posts...", border: InputBorder.none),
-          onChanged: (val) => ref.read(searchProvider.notifier).search(val),
-        ),
-        actions: [
-          IconButton(
-            icon: Icon(isSearchMode ? Icons.close : Icons.search),
-            onPressed: () {
-              setState(() => isSearchMode = !isSearchMode);
-              if (!isSearchMode) {
-                _controller.clear();
-                ref.invalidate(searchProvider);
-              }
-            },
-          ),
-        ],
+        title: const Text("Clean Architecture Posts"),
+        centerTitle: true,
+        elevation: 0,
+        backgroundColor: Colors.white,
+        foregroundColor: Colors.black,
       ),
-      body: (isSearchMode ? searchAsync : postsAsync).when(
+      body: postsAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (err, _) => Center(child: Text('Error: $err')),
         data: (posts) => ListView.builder(
+          padding: const EdgeInsets.all(12),
           itemCount: posts.length,
-          itemBuilder: (context, index) => ListTile(
-            title: Text(posts[index].title, style: const TextStyle(fontWeight: FontWeight.bold)),
-            subtitle: Text(posts[index].body, maxLines: 1),
-            onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => PostDetailPage(postId: posts[index].id))),
-          ),
+          itemBuilder: (context, index) {
+            final post = posts[index];
+            return Card(
+              elevation: 2,
+              margin: const EdgeInsets.only(bottom: 12),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              child: ListTile(
+                contentPadding: const EdgeInsets.all(16),
+                title: Text(
+                  post.title,
+                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                ),
+                subtitle: Padding(
+                  padding: const EdgeInsets.only(top: 8.0),
+                  child: Text(post.body, maxLines: 2, overflow: TextOverflow.ellipsis),
+                ),
+                onTap: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => PostDetailPage(postId: post.id)),
+                ),
+              ),
+            );
+          },
         ),
       ),
     );

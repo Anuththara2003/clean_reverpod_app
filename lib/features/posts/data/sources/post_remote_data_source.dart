@@ -1,5 +1,5 @@
 import 'package:dio/dio.dart';
-import '../models/post_model.dart';
+import 'package:clean_riverpod_app/features/posts/data/models/post_model.dart';
 
 abstract class PostRemoteDataSource {
   Future<List<PostModel>> getPosts();
@@ -12,7 +12,12 @@ class PostRemoteDataSourceImpl implements PostRemoteDataSource {
   @override
   Future<List<PostModel>> getPosts() async {
     final response = await dio.get('https://jsonplaceholder.typicode.com/posts');
-    final List data = response.data;
-    return data.map((e) => PostModel.fromJson(e)).toList();
+
+    if (response.statusCode == 200) {
+      final List data = response.data;
+      return data.map((json) => PostModel.fromJson(json)).toList();
+    } else {
+      throw Exception('Failed to load posts');
+    }
   }
 }
