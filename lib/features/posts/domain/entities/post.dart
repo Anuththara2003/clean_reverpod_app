@@ -1,8 +1,16 @@
 class Post {
   final int id;
-  final int userId;
   final String title;
-  final String body;
+  final double price;
+  final String description;
+  final String category;
+  final String image;
 
-  Post({required this.id, required this.userId, required this.title, required this.body});
+  Post({required this.id, required this.title, required this.price, required this.description, required this.category, required this.image});
+}
+
+class CartItem {
+  final Post post;
+  final int quantity;
+  CartItem({required this.post, required this.quantity});
 }

@@ -1,49 +1,48 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../../data/sources/post_remote_data_source.dart';
+import '../../domain/entities/post.dart';
 
-import 'package:clean_riverpod_app/features/posts/data/repositories/post_repository_impl.dart';
-import 'package:clean_riverpod_app/features/posts/data/sources/post_remote_data_source.dart';
-import 'package:clean_riverpod_app/features/posts/data/sources/post_local_data_source.dart';
-import 'package:clean_riverpod_app/features/posts/domain/repositories/post_repository.dart';
-import 'package:clean_riverpod_app/features/posts/domain/usecases/get_posts_usecase.dart';
-import 'package:clean_riverpod_app/features/posts/domain/entities/post.dart';
-
-// 1. SharedPreferences Provider
 final sharedPreferencesProvider = Provider<SharedPreferences>((ref) {
   throw UnimplementedError();
 });
 
-// 2. Dio Provider
 final dioProvider = Provider((ref) => Dio());
 
-// 3. Data Sources
-final postRemoteDataSourceProvider = Provider<PostRemoteDataSource>((ref) {
-  return PostRemoteDataSourceImpl(ref.watch(dioProvider));
-});
 
-final postLocalDataSourceProvider = Provider<PostLocalDataSource>((ref) {
-  return PostLocalDataSourceImpl(ref.watch(sharedPreferencesProvider));
-});
-
-// 4. Repository (දැන් remote සහ local දෙකම inject කරනවා)
-final postRepositoryProvider = Provider<PostRepository>((ref) {
-  return PostRepositoryImpl(
-    remoteDataSource: ref.watch(postRemoteDataSourceProvider),
-    localDataSource: ref.watch(postLocalDataSourceProvider),
-  );
-});
-
-// 5. Use Case
-final getPostsUseCaseProvider = Provider((ref) {
-  return GetPostsUseCase(ref.watch(postRepositoryProvider));
-});
-
-// 6. UI Providers
 final postsProvider = FutureProvider<List<Post>>((ref) async {
-  return await ref.watch(getPostsUseCaseProvider).call();
+  final source = PostRemoteDataSourceImpl(ref.watch(dioProvider));
+  return await source.getPosts();
 });
 
-final postDetailProvider = FutureProvider.family<Post, int>((ref, id) async {
-  return await ref.watch(postRepositoryProvider).getPostById(id);
+
+final searchQueryProvider = StateProvider<String>((ref) => "");
+
+final filteredPostsProvider = Provider<AsyncValue<List<Post>>>((ref) {
+  final postsAsync = ref.watch(postsProvider);
+  final query = ref.watch(searchQueryProvider).toLowerCase();
+
+  return postsAsync.whenData((posts) {
+    if (query.isEmpty) return posts;
+    return posts.where((p) => p.title.toLowerCase().contains(query)).toList();
+  });
 });
+
+// --- 4. Shopping Cart Logic ---
+class CartNotifier extends StateNotifier<List<CartItem>> {
+  CartNotifier() : super([]);
+
+  void addToCart(Post post) {
+    final idx = state.indexWhere((item) => item.post.id == post.id);
+    if (idx >= 0) {
+      state = [for (final item in state) if (item.post.id == post.id) CartItem(post: item.post, quantity: item.quantity + 1) else item];
+    } else {
+      state = [...state, CartItem(post: post, quantity: 1)];
+    }
+  }
+
+  void removeFromCart(int id) => state = state.where((item) => item.post.id != id).toList();
+}
+
+final cartProvider = StateNotifierProvider<CartNotifier, List<CartItem>>((ref) => CartNotifier());

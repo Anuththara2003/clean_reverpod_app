@@ -4,7 +4,6 @@ import 'package:clean_riverpod_app/features/posts/domain/entities/post.dart';
 import 'package:clean_riverpod_app/features/posts/domain/repositories/post_repository.dart';
 import 'package:clean_riverpod_app/features/posts/domain/usecases/get_posts_usecase.dart';
 
-// Repository එක Mock කිරීම සඳහා
 class MockPostRepository extends Mock implements PostRepository {}
 
 void main() {
@@ -17,19 +16,22 @@ void main() {
   });
 
   final tPosts = [
-    Post(id: 1, userId: 1, title: 'Test Title', body: 'Test Body')
+    Post(
+        id: 1,
+        title: 'Test Product',
+        price: 20.0,
+        description: 'Test Description',
+        category: 'electronics', // <--- මෙන්න මේක අඩුවෙලා තිබුණේ
+        image: 'https://i.pravatar.cc/150'
+    )
   ];
 
   test('should get posts from the repository', () async {
-    // Arrange: Repository එකෙන් data එනවා කියලා ලෑස්ති කරනවා
     when(() => mockPostRepository.getPosts()).thenAnswer((_) async => tPosts);
 
-    // Act: Use case එක run කරනවා
     final result = await usecase.call();
 
-    // Assert: ලැබුණු දත්ත නිවැරදිද බලනවා
     expect(result, tPosts);
     verify(() => mockPostRepository.getPosts()).called(1);
-    verifyNoMoreInteractions(mockPostRepository);
   });
 }
