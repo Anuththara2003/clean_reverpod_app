@@ -4,7 +4,11 @@ import 'features/posts/presentation/pages/counter_page.dart';
 import 'features/posts/presentation/providers/theme_provider.dart';
 
 void main() {
-  runApp(const ProviderScope(child: MyApp()));
+  runApp(
+    const ProviderScope(
+      child: MyApp(),
+    ),
+  );
 }
 
 class MyApp extends ConsumerWidget {
@@ -18,10 +22,17 @@ class MyApp extends ConsumerWidget {
     return MaterialApp(
       title: 'Clean Riverpod App',
       debugShowCheckedModeBanner: false,
-
       themeMode: themeMode,
-      theme: ThemeData.light(useMaterial3: true),
-      darkTheme: ThemeData.dark(useMaterial3: true),
+      theme: ThemeData(
+        useMaterial3: true,
+        brightness: Brightness.light,
+        colorSchemeSeed: Colors.blue,
+      ),
+      darkTheme: ThemeData(
+        useMaterial3: true,
+        brightness: Brightness.dark,
+        colorSchemeSeed: Colors.blue,
+      ),
       home: const CounterPage(),
     );
   }
